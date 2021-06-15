@@ -107,17 +107,23 @@ class Installer:
             self.windows_install(bin_name)
 
     def windows_install(self, bin_name):
-        target_dir = os.environ["APPDATA"] + os.sep +self.fileDir
+        target_dir = os.environ['LOCALAPPDATA'] + os.sep + "Programs" + os.sep +self.fileDir
         self.tar.extract(target_dir)
         if self.binDir.endswith(".exe"):
             self.binDir=self.binDir[:self.binDir.rindex(os.sep)]
         origin_bin = self.binDir + os.sep + bin_name
         target_bin = target_dir + os.sep + bin_name
-        if os.path.exists(origin_bin+".exe"):
-            os.remove(origin_bin+".exe")
+    
         with open(origin_bin+".bat", 'w') as wf:
             wf.write("@"+target_bin+" %1 %2 %3 %4 %5 %6 %7 %8 %9")
         wf.close()
+        with open(origin_bin+"_.bat", 'w') as wf:
+            wf.write("@choice /t 1 /d y /n >nul\r\n")
+            wf.write("@del "+origin_bin+".exe"+"\r\n")
+            wf.write("@del "+origin_bin+"_.bat"+"\r\n")
+        wf.close()
+        os.system("start /min \"cmd /c "+origin_bin+"_.bat\"")
+
 
     def linux_install(self, bin_name):
         target_dir = self.binDir + os.sep + ".." + os.sep + self.fileDir
@@ -189,7 +195,7 @@ class Tar:
         if os.path.isdir(target):
             pass
         else:
-            os.mkdir(target)
+            os.makedirs(target)
         for name in tar.getnames():
             tar.extract(name, target)
         tar.close()
@@ -199,16 +205,14 @@ class Tar:
         if os.path.isdir(target):
             pass
         else:
-            os.mkdir(target)
+            os.makedirs(target)
         for names in zip_file.namelist():
             zip_file.extract(names, target)
         zip_file.close()
 
 
 if __name__ == '__main__':
-    #main()
-    print(os.getcwd())
-    print(sys.path[0])
+    main()
 
 # uname_result(system='Linux', node='VM-0-9-ubuntu', release='5.4.0-72-generic', version='#80-Ubuntu SMP Mon Apr 12 17:35:00 UTC 2021', machine='x86_64', processor='x86_64')
 # uname_result(system='Windows', node='DESKTOP-6BV4V7I', release='10', version='10.0.17763', machine='AMD64', processor='Intel64 Family 6 Model 60 Stepping 3, GenuineIntel')
