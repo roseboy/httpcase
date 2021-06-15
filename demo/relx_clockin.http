@@ -1,0 +1,45 @@
+### !env test
+### !envSet test url https://app.relxtech.com
+### !envSet dev url https://dev.app.relxtech.com
+### !header ltype 1
+### !header User-Agent RELXME_3.6.1_ANDROID_deltainno-DT1901A_android${space}10_WIFI_1616688889267
+### !header deviceType android
+### !header appVersion 3.6.1
+### !header versionBuild 46
+### !header emulator false
+### !header notification-settings-state on
+### !header Host app.relxtech.com
+### !header Content-Type application/json;${space}charset=utf-8
+### !callbackWithFunction cb.WeChatNotify https://sctapi.ftqq.com/SCT42818TUH9nkBxCPJSpNJEvNEYTd0JC.send
+### !import cb ../plugin-js/callback.js
+
+#@relx每日签到
+POST ${url}/dianziyan-api/api/clock-in
+sensorsId: 2799cf97ae99afd6
+access_token: hvnJbo0b2NmCHyiW
+nonce_str: l9xbn5j1Ika297qm5F71${aasd}
+timestamp: 1616688889
+sign: c03a8f3489d9070558744024e84e9734
+token: d528b911fbad418681585ccb7f10a457
+
+{
+  "type": 1
+}
+
+### print ${res.body}
+
+#@relx每日签到2
+POST ${url}/dianziyan-api/api/clock-in
+sensorsId: 7826e5a47666f6bf
+access_token: hvnJbo0b2NmCHyiW
+nonce_str: 92c19X20697Mr22m7zko
+timestamp: 1620657601
+sign: 10393a4138e826cb816a05f962e1a821
+token: 81f164cfd4644ffc90362bf65dd4bf5a
+
+{
+  "type": 1
+}
+
+### print ${res.body}
+

@@ -1,0 +1,62 @@
+//fileName httpcase_helloworld.http
+
+!env test
+!envSet test apiUrl http://127.0.0.1:8000
+!envSet dev apiUrl http://localhost:80
+//全局token
+!header token 123456
+!import cb ../plugin-js/callback.js
+//!callbackWithFunction cb.rwork https://sctapi.ftqq.com/SCT42818TUH9nkBxCPJSpNJEvNEYTd0JC.send
+
+@添加用户
+POST ${apiUrl}/user
+
+{
+    "name":"王二丫",
+    "sex":"男",
+    "age":18
+}
+
+assert ${res.status} == 200
+print ${res.body.id}
+set userId ${res.body.id}
+print ${res.text}
+
+@查询用户
+GET ${apiUrl}/user/${userId}
+
+assert ${res.status} == 200
+assertEq ${res.body.name} 王二丫
+print ${res.text}
+
+@修改用户
+POST ${apiUrl}/user/${userId}
+
+{
+    "id":${userId},
+    "name":"王二丫",
+    "sex":"男",
+    "age":20
+}
+
+assert ${res.status} == 200
+print ${res.text}
+
+@查询用户是否修改成功
+GET ${apiUrl}/user/${userId}
+
+assert ${res.status} == 200
+assertEq ${res.body.age} 20
+print ${res.text}
+
+@删除用户
+DELETE ${apiUrl}/user/${userId}
+
+assert ${res.status} == 200
+print ${res.text}
+
+@查询用户是否删除成功
+GET ${apiUrl}/user/${userId}
+
+assert ${res.status} == 404
+print ${res.text}

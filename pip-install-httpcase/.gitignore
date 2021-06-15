@@ -1,0 +1,9 @@
+
+dist/
+build/
+httpcase.egg-info/
+/build/
+/httpcase.egg-info/
+/dist/
+/.vscode/
+.vscode/

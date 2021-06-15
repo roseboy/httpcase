@@ -1,0 +1,53 @@
+### !env test
+### !envSet test url https://cloud.cn2030.com/sc/wx/HandlerSubscribe.ashx
+### !loadData zhimiao_config.json
+### !header Host cloud.cn2030.com
+### !header Content-Type application/json
+### !header Accept */*
+### !header Connection keep-alive
+### !header Cookie ${cookie}
+### !header User-Agent Mozilla/5.0${space}(iPhone;${space}CPU${space}iPhone${space}OS${space}12_1_4${space}like${space}Mac${space}OS${space}X)${space}AppleWebKit/605.1.15${space}(KHTML,${space}like${space}Gecko)${space}Mobile/16D57${space}MicroMessenger/7.0.3(0x17000321)${space}NetType/WIFI${space}Language/zh_CN
+### !header Referer https://servicewechat.com/wx2c7f0f3c30d99445/72/page-frame.html
+### !header zftsl ${zftsl}
+### !header Accept-Language zh-cn
+### !header Accept-Encoding gzip,deflate,br
+
+### !set CustomerId 245
+### !set CustomerProductId 12
+
+#@查询地点
+GET ${url}?act=CustomerList&city=${City}&id=0&cityCode=${CityCode}&product=0
+
+### !allowRedirect
+### !if ${CustomerId} == 0
+### assert ${res.status} == 200
+### (set CustomerId (filter ${res.body.list} cname ${CustomerName} id))
+### print ${CustomerId}
+### sleep 300
+### while ${CustomerId} == 0
+
+#@查询疫苗
+GET ${url}?act=CustomerProduct&id=${CustomerId}
+
+### !allowRedirect
+### !if ${CustomerProductId} == 0
+### assert ${res.status} == 200
+### (set CustomerProductId (filter ${res.body.list} text ${CustomerProductName} id))
+### print ${CustomerProductId}
+### sleep 300
+### while ${CustomerProductId} == 0
+
+#@查询日期
+GET ${url}?act=GetCustSubscribeDateAll&pid=${CustomerProductId}&id=${CustomerId}&month=${Month}
+
+### !allowRedirect
+### assert ${res.status} == 200
+### set Date ${res.body.list[0].date}
+### print ${res.body}
+
+#@查询MxID
+GET ${url}?act=GetCustSubscribeDateDetail&pid=${CustomerProductId}&id=${CustomerId}&scdate=${Date}
+
+### !allowRedirect
+### assert ${res.status} == 200
+### print ${res.text}

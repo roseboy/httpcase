@@ -1,0 +1,32 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "httpcase",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.httpcase",
+				"match": "\\b(assert|set|print|indexOf|substr|add|httpcase|env|envSet|header|loadData|GET|POST)\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.httpcase",
+			"begin": "\\$\\{",
+			"end": "\\}",
+			"patterns": [
+				{
+					"name": "constant.character.escape.httpcase",
+					"match": "\\b(GET|POST)\\b"
+				}
+			]
+		}
+	},
+	"scopeName": "source.httpcase"
+}

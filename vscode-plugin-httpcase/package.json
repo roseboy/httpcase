@@ -1,0 +1,34 @@
+{
+    "name": "httpcase",
+    "displayName": "httpcase",
+    "description": "api test tool",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.55.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "httpcase",
+                "aliases": [
+                    "httpcase",
+                    "httpcase"
+                ],
+                "extensions": [
+                    "hc"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "httpcase",
+                "scopeName": "source.httpcase",
+                "path": "./syntaxes/httpcase.tmLanguage.json"
+            }
+        ]
+    }
+}

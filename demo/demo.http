@@ -1,0 +1,27 @@
+//httpcase demo
+
+!import date ../plugin-js/date.js
+!import rsa ../plugin-js/rsa.js
+!import cb ../plugin-js/callback.js
+!print (date.getTomorrowDate)
+!print (date.test 1 2 3 $)
+!print (rsa.encrypt password123 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCHnSb8MpyXMFfMBcyrqkG5ZgLZYr7DZZPeT3Ekm6OzTbB01HkN6kIYO1tpS48+hfA367P+oLf32hVnoBDBHPi1FOe+Htq4EcTT2rlEUYF/kl5q2XwRr6cBxdA68J/VFKUQrLchrR/kRnsQ8eLnpiOH2zsT70a3K5+qStVY7AwKIQIDAQAB 879d26fc329c973057cc05ccabaa41b96602d962bec36593de4f71249ba3b34db074d4790dea42183b5b694b8f3e85f037ebb3fea0b7f7da1567a010c11cf8b514e7be1edab811c4d3dab94451817f925e6ad97c11afa701c5d03af09fd514a510acb721ad1fe4467b10f1e2e7a62387db3b13ef46b72b9faa4ad558ec0c0a21 10001)
+!set body (date.addDate 0 0 0)
+
+!include relx_clockin.http
+//!include relx_coupon.http
+//!include zhimiao_love_daddy.http
+
+@添加用户
+POST http://localhost:8000/user
+token: 123456
+{
+    "name":"王二丫",
+    "sex":"男",
+    "age":18
+}
+
+assert ${res.status} == 200
+print ${res.body.id}
+set userId ${res.body.id}
+print ${res.text}
