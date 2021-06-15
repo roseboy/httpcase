@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name = "httpcase",
-    version = "1.0.8",
+    version = "1.0.10",
     author = "Mr.K",
     author_email = "roseboy@live.com",
     description = ("HttpCase - api auto test tool."),
@@ -12,8 +12,8 @@ setup(
     install_requires = [
         'requests>=2.19.1'
     ],
-    packages=['src'],
+    packages=['httpcase'],
     entry_points={
-        'console_scripts': ['hc=src.httpcase:main'],
+        'console_scripts': ['hc=httpcase.httpcase:main'],
     }
 )
