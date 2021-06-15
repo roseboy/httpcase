@@ -12,8 +12,8 @@ setup(
     install_requires = [
         'requests>=2.19.1'
     ],
-    packages=['src'],
+    packages=['httpcase'],
     entry_points={
-        'console_scripts': ['hc=src.httpcase:main'],
+        'console_scripts': ['hc=httpcase.httpcase:main'],
     }
 )

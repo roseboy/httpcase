@@ -133,8 +133,8 @@ class Installer:
         if os.path.exists(origin_bin):
             os.remove(origin_bin)
         os.symlink(target_bin, origin_bin)
-        os.chmod(target_bin, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-        os.chmod(origin_bin, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        # os.chmod(target_bin, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        # os.chmod(origin_bin, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
     def mac_install(self, bin_name):
         self.linux_install(bin_name)
