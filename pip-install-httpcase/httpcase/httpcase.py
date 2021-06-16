@@ -8,51 +8,89 @@ import tempfile
 import tarfile
 import zipfile
 import re
+import locale
+from sys import stdout
 import requests
 
 home_page = "https://github.com/roseboy/httpcase"
+home_page2 = "https://gitee.com/roseboy/httpcase"
+os_lang="zh_cn"
 
 def main():
     
     urls= get_latest_release_url()
-    print(urls)
     if len(urls) == 0:
         print("Download HttpCase error")
         exit(1)
     download_url = get_my_os_url(urls)
-    print(download_url)
     if download_url == "":
         print("can't get download url for your os")
         exit(1)
 
-    print("Download:" + download_url)
-    r = requests.get(download_url)
     file_name = tempfile.gettempdir() + os.sep + download_url[download_url.rindex("/") + 1:]
-    with open(file_name, "wb") as code:
-        code.write(r.content)
-    code.close()
-
-    print("DownloadComplete:" + file_name)
+    downloadfile(download_url,file_name)
 
     installer = Installer(file_name)
     installer.install("hc")
 
     os.remove(file_name)
+    print("\rInstall Success!")
     return
+
+def downloadfile(url, filename):
+    with open(filename, "wb") as fw:
+        with requests.get(url, stream=True) as r:
+            filesize = r.headers["Content-Length"]
+            chunk_size = 128
+            times = int(filesize) // chunk_size
+            show = float(1) / times
+            show2 = float(1) / times
+            start = 1
+
+            print("Downloading " + url[url.rindex("/") + 1:]+" ("+format(float(filesize)/1024/1024, '.2f')+" MB)")
+
+            for chunk in r.iter_content(chunk_size):
+                fw.write(chunk)
+                if start <= times:
+                    stdout.write(" |"+bar(show*100)+"| "+format(show*100,".2f")+"%\r")
+                    start += 1
+                    show += show2
+                else:
+                    stdout.write("")
+        r.close()
+    fw.close()
+    print("")
+
+def bar(n):
+    p = int(n/2)
+    if p==49:
+        p=50
+    return "█"* p+" "*(50-p)
 
 def get_latest_release_url():
     git_version=""
     release_urls = []
-    response  = requests.get(home_page + "/releases")
-
-    tags = re.findall( r'<span class="css-truncate-target"(.*?)</span>', response.text)
+    tags=[]
+    html = ""
+    if is_ch():
+        response  = requests.get(home_page2 + "/releases")
+        html= response.text
+        html=html.replace("\r","")
+        html=html.replace("\n","")
+        tags = re.findall(r"icon-tag'>(.*?)</span>", html)
+    else:
+        response  = requests.get(home_page + "/releases")
+        html= response.text
+        tags = re.findall( r'<span class="css-truncate-target"(.*?)</span>', html)
+    
     if len(tags) > 0:
         git_version = tags[0]
-        git_version = git_version[git_version.find(">")+1:]
+        git_version = git_version[git_version.rfind(">")+1:]
     else:
         return release_urls
 
-    urls = re.findall( r'<a href="(.*?)"', response.text)
+    git_version=git_version[1:]
+    urls = re.findall( r'<a href="(.*?)"', html)
     for url in urls:
         if url.find(git_version)>-1 and url.find("download")>-1 and not url.endswith(".txt"):
             release_urls.append(url)
@@ -80,9 +118,15 @@ def get_my_os_url(urls):
         return ""
     for url in urls:
         if url.find(os_tag) >-1:
-            return "https://github.com"+url
+            if is_ch():
+                return "https://gitee.com"+url
+            else:
+                return "https://github.com"+url
+                
     return ""
-        
+
+def is_ch():
+    return locale.getdefaultlocale()[0].lower()==os_lang      
 
 class Installer:
     hardware = ""
@@ -107,32 +151,43 @@ class Installer:
             self.windows_install(bin_name)
 
     def windows_install(self, bin_name):
-        target_dir = os.environ['LOCALAPPDATA'] + os.sep + "Programs" + os.sep +self.fileDir
-        self.tar.extract(target_dir)
         if self.binDir.endswith(".exe"):
             self.binDir=self.binDir[:self.binDir.rindex(os.sep)]
-        origin_bin = self.binDir + os.sep + bin_name
-        target_bin = target_dir + os.sep + bin_name
-    
+
+        target_dir = os.environ['LOCALAPPDATA'] + os.sep + "Programs" + os.sep +self.fileDir
+        target_bin = self.binDir + os.sep + bin_name + ".bat"
+        origin_bin = self.binDir + os.sep + bin_name + ".exe"
+
+        self.tar.extract(target_dir)
+        with open(target_bin, 'w') as wf:
+            wf.write("@"+target_dir+os.sep+bin_name+".exe %1 %2 %3 %4 %5 %6 %7 %8 %9")
+        wf.close()
+
         with open(origin_bin+".bat", 'w') as wf:
-            wf.write("@"+target_bin+" %1 %2 %3 %4 %5 %6 %7 %8 %9")
-        wf.close()
-        with open(origin_bin+"_.bat", 'w') as wf:
             wf.write("@choice /t 1 /d y /n >nul\r\n")
-            wf.write("@del "+origin_bin+".exe"+"\r\n")
-            wf.write("@del "+origin_bin+"_.bat"+"\r\n")
+            wf.write("@del "+origin_bin+"\r\n")
+            wf.write("@del "+origin_bin+".bat"+"\r\n")
         wf.close()
-        os.system("start /min \"cmd /c "+origin_bin+"_.bat\"")
+        os.system("start /min cmd /c "+origin_bin+".bat")
 
 
     def linux_install(self, bin_name):
-        target_dir = self.binDir + os.sep + ".." + os.sep + self.fileDir
-        self.tar.extract(target_dir)
+        target_dir = "/usr/local/" 
+        target_bin = "/usr/local/bin/"
         origin_bin = self.binDir + os.sep + bin_name
-        target_bin = target_dir + os.sep + bin_name
+        if os.access(target_dir, os.W_OK):
+            target_dir = target_dir + self.fileDir
+            target_bin = target_bin + bin_name
+        else:
+            target_dir = self.binDir + os.sep + ".." + os.sep + self.fileDir
+            target_bin = origin_bin
+        
+        self.tar.extract(target_dir)
+
         if os.path.exists(origin_bin):
             os.remove(origin_bin)
-        os.symlink(target_bin, origin_bin)
+        os.symlink(target_dir+os.sep+bin_name, target_bin)
+        
         # os.chmod(target_bin, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
         # os.chmod(origin_bin, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 

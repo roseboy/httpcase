@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name = "httpcase",
-    version = "1.0.8",
+    version = "1.0.10",
     author = "Mr.K",
     author_email = "roseboy@live.com",
     description = ("HttpCase - api auto test tool."),
