@@ -9,8 +9,8 @@ import tarfile
 import zipfile
 import re
 import locale
-from sys import stdout
 import requests
+from tqdm import tqdm
 
 home_page = "https://github.com/roseboy/httpcase"
 home_page2 = "https://gitee.com/roseboy/httpcase"
@@ -38,34 +38,16 @@ def main():
     return
 
 def downloadfile(url, filename):
-    with open(filename, "wb") as fw:
-        with requests.get(url, stream=True) as r:
-            filesize = r.headers["Content-Length"]
-            chunk_size = 128
-            times = int(filesize) // chunk_size
-            show = float(1) / times
-            show2 = float(1) / times
-            start = 1
-
-            print("Downloading " + url[url.rindex("/") + 1:]+" ("+format(float(filesize)/1024/1024, '.2f')+" MB)")
-
-            for chunk in r.iter_content(chunk_size):
-                fw.write(chunk)
-                if start <= times:
-                    stdout.write(" |"+bar(show*100)+"| "+format(show*100,".2f")+"%\r")
-                    start += 1
-                    show += show2
-                else:
-                    stdout.write("")
-        r.close()
-    fw.close()
-    print("")
-
-def bar(n):
-    p = int(n/2)
-    if p==49:
-        p=50
-    return "█"* p+" "*(50-p)
+    with requests.get(url, stream=True) as r:
+        filesize = r.headers["Content-Length"]
+        chunk_size = 1024
+        print("Downloading " + url+" ("+format(float(filesize)/1024/1024, '.2f')+" MB)")
+        with tqdm(total=float(filesize),unit='B',unit_scale=True,unit_divisor=1024,miniters=1,leave=False) as pbar:
+            with open(filename, "wb") as fw:
+                for chunk in r.iter_content(chunk_size):
+                    if chunk:
+                        fw.write(chunk)
+                        pbar.update(chunk_size)
 
 def get_latest_release_url():
     git_version=""
