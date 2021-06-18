@@ -42,7 +42,7 @@ def downloadfile(url, filename):
         filesize = r.headers["Content-Length"]
         chunk_size = 1024
         print("Downloading " + url+" ("+format(float(filesize)/1024/1024, '.2f')+" MB)")
-        with tqdm(total=float(filesize),unit='B',unit_scale=True,unit_divisor=1024,miniters=1,leave=False) as pbar:
+        with tqdm(total=float(filesize),unit='B',unit_scale=True,unit_divisor=1024,miniters=1,leave=False,ncols=80) as pbar:
             with open(filename, "wb") as fw:
                 for chunk in r.iter_content(chunk_size):
                     if chunk:
