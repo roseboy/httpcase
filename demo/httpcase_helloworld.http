@@ -33,7 +33,7 @@ print ${res.text}
 POST ${apiUrl}/user/${userId}
 
 {
-    "id":${userId},
+    "id":"${userId}",
     "name":"王二丫",
     "sex":"男",
     "age":20
@@ -45,9 +45,9 @@ print ${res.text}
 @查询用户是否修改成功
 GET ${apiUrl}/user/${userId}
 
+print ${res.text}
 assert ${res.status} == 200
 assertEq ${res.body.age} 20
-print ${res.text}
 
 @删除用户
 DELETE ${apiUrl}/user/${userId}

@@ -28,7 +28,7 @@ func newVersionCmd() *versionCmd {
 
 	cmd := &cobra.Command{
 		Use:   "version",
-		Short: "print HttpCase version",
+		Short: "Print HttpCase version",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println(buildVersion())
 		},

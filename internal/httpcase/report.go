@@ -20,14 +20,18 @@ func PrintReport(testCtx *TestContext, result *TestResult) error {
 		return err
 	}
 
-	err = PrintHtmlReport(testCtx, result)
-	if err != nil {
-		return err
+	if testCtx.Out != "" {
+		err := PrintHtmlReport(testCtx, result)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = ReportCallback(testCtx, result)
-	if err != nil {
-		return err
+	if testCtx.CallbackUrl != "" {
+		err := ReportCallback(testCtx, result)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -75,7 +79,7 @@ func PrintHtmlReport(testCtx *TestContext, result *TestResult) error {
 	data["Duration"] = result.Duration
 
 	html := getHtmlTemplate()
-	isProd := strings.Contains(html, "<!--prod-->")
+	//isProd := strings.Contains(html, "<!--prod-->")
 	html = trimHtml(html)
 	html, err := renderHtml(html, data)
 	if err != nil {
@@ -84,11 +88,9 @@ func PrintHtmlReport(testCtx *TestContext, result *TestResult) error {
 
 	//html = testCtx.RenderValueString(html)
 
-	htmlPath := fmt.Sprintf("%s_report_%s.html",
-		result.TestCaseFile.FileName[:strings.LastIndex(result.TestCaseFile.FileName, ".")],
-		util.FmtDate(time.Now(), "20060102150405"))
-	if !isProd {
-		htmlPath = "debug_report.html"
+	htmlPath := testCtx.Out
+	if !strings.HasSuffix(strings.ToLower(html), ".html") && !strings.HasSuffix(strings.ToLower(html), ".htm") {
+		htmlPath = fmt.Sprintf("%s.html", testCtx.Out)
 	}
 
 	err = util.WriteText(html, htmlPath)
@@ -103,9 +105,6 @@ func ReportCallback(testCtx *TestContext, result *TestResult) error {
 		url            = testCtx.CallbackUrl
 		jsFunctionName = testCtx.CallbackJsFunction
 	)
-	if url == "" {
-		return nil
-	}
 
 	resultBody, err := json.Marshal(result)
 	if err != nil {
@@ -114,7 +113,7 @@ func ReportCallback(testCtx *TestContext, result *TestResult) error {
 	resultBodyStr := string(resultBody)
 
 	if jsFunctionName != "" {
-		tf := &TestFunctions{ctx: testCtx}
+		tf := &TestFunctions{}
 		resultBodyStr, err = tf.RunJsWithName(jsFunctionName, resultBodyStr)
 		if err != nil {
 			return err

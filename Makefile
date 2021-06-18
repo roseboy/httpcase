@@ -19,4 +19,6 @@ twine:
 	cd pip-install-httpcase \
 	&& python setup.py sdist \
 	&& python setup.py bdist_wheel --universal \
-	&& twine upload dist/*
+	&& twine upload dist/* \
+	&& rm -rf build && rm -rf dist && rm -rf httpcase.egg-info \
+	&& echo "upload success!"

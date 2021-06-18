@@ -174,3 +174,14 @@ func ParseUrlParam(url string) map[string]string {
 func NowMillisecond() int64 {
 	return time.Now().UnixNano() / 1000 / 1000
 }
+
+func IsExist(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return false
+}

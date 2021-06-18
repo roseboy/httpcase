@@ -16,13 +16,15 @@ type TestContext struct {
 	Session            *requests.RequestBuilder
 	VarIndex           int
 	Attr               map[string]*AttrValue
-	Env                string
 	JSVms              map[string]*otto.Otto
 	CallbackUrl        string
 	CallbackJsFunction string
 	CommonHeader       map[string]string
-	testRequest        *TestRequest
 
+	Env string
+	Out string
+
+	testRequest    *TestRequest
 	responseValues []map[string]interface{}
 }
 
@@ -49,6 +51,7 @@ func NewTestContext() *TestContext {
 		responseValues: make([]map[string]interface{}, 0),
 		VarIndex:       1500000,
 	}
+	TestHolder.TestContext = t
 	return t
 }
 
@@ -93,17 +96,24 @@ func (t *TestContext) Run() (*TestResult, error) {
 
 	//执行case
 	for _, cas := range cases {
+		TestHolder.TestCase = cas
+
 		util.Println()
 		util.Log(util.Green(fmt.Sprintf("[%s]", cas.Name)))
 
 		//运行全局函数
 		if cas.IsGlobal {
 			t.RunFunction(cas, true, false)
+			if !cas.Pass {
+				return nil, fmt.Errorf("global error")
+			}
+			TestHolder.TestCase = nil
 			continue
 		}
 
 		cas = t.RunFunction(cas, true, false)
 		if !cas.If {
+			TestHolder.TestCase = nil
 			continue
 		}
 		loopCount := 0
@@ -122,6 +132,7 @@ func (t *TestContext) Run() (*TestResult, error) {
 
 			util.Log(util.Blue("RESULT:"), "Pass =>", cas.Pass)
 		}
+		TestHolder.TestCase = nil
 	}
 
 	var (
@@ -290,8 +301,13 @@ func (t *TestContext) parseRes(response *requests.Response) (map[string]interfac
 func RunFuncByName(ctx *TestContext, cas *TestCase, fun *Function) {
 	var (
 		args = make([]reflect.Value, 0)
-		tf   = &TestFunctions{ctx: ctx, cas: cas}
+		tf   = &TestFunctions{}
 	)
+
+	TestHolder.Function = fun
+	defer func() {
+		TestHolder.Function = nil
+	}()
 
 	args = append(args, reflect.ValueOf(tf))
 	fun.ArgsValue = make([]string, 0)

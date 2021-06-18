@@ -26,7 +26,7 @@ func newDemoCmd() *demoCmd {
 
 	cmd := &cobra.Command{
 		Use:   "demo",
-		Short: "Run api demo server.",
+		Short: "Run an api demo server",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.Println("httpcase demo api server start on:", root.opts.port)
 			srv := &http.Server{Addr: ":" + root.opts.port}
@@ -87,7 +87,7 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 		bodyStr = strings.Trim(bodyStr, "\r")
 		if id == "" {
 			log.Println("add user:", bodyStr)
-			id := fmt.Sprintf("%d", time.Now().Unix())
+			id := fmt.Sprintf("uid-%d", time.Now().Unix())
 			bodyStr = fmt.Sprintf(`{"id":"%s",%s`, id, bodyStr[1:])
 			userList[id] = bodyStr
 		} else {

@@ -8,7 +8,7 @@ import (
 var (
 	rootCmd = &cobra.Command{
 		Use:   "hc",
-		Short: "A very NB tool for auto api test.",
+		Short: "A very NB tool for auto api test",
 	}
 )
 

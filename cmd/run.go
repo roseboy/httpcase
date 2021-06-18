@@ -13,6 +13,7 @@ type runCmd struct {
 
 type runOpts struct {
 	env string
+	out string
 }
 
 func newRunCmd() *runCmd {
@@ -20,13 +21,14 @@ func newRunCmd() *runCmd {
 
 	cmd := &cobra.Command{
 		Use:   "run",
-		Short: "Run a api test case file.",
+		Short: "Run api test case file",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return doThat(root, args)
 		},
 	}
 
 	cmd.Flags().StringVarP(&root.opts.env, "env", "e", "", "env flag")
+	cmd.Flags().StringVarP(&root.opts.out, "out", "o", "", "output test report file")
 
 	root.cmd = cmd
 	return root
@@ -39,6 +41,7 @@ func doThat(cmd *runCmd, args []string) error {
 	path := args[0]
 	testCtx := httpcase.NewTestContext()
 	testCtx.Env = cmd.opts.env
+	testCtx.Out = cmd.opts.out
 
 	//读取文件
 	codes, err := httpcase.ReadCaseFile(path)

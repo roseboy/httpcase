@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/robertkrimen/otto"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -24,8 +23,6 @@ type TestFunctions struct {
 	functions.Files
 	functions.Asserts
 	functions.Mock
-	ctx *TestContext
-	cas *TestCase
 }
 
 func init() {
@@ -45,35 +42,41 @@ func GetFunctionName(line string) (bool, string) {
 }
 
 func (f *TestFunctions) Set(key string, value string) bool {
-	f.ctx.SetAttr(key, AttrValueTypeSet, value)
+	TestHolder.TestContext.SetAttr(key, AttrValueTypeSet, value)
 	return true
 }
 
 func (f *TestFunctions) Env(envName string) bool {
-	f.ctx.Env = envName
+	if TestHolder.TestContext.Env == "" {
+		TestHolder.TestContext.Env = envName
+	}
 	return true
 }
 
 func (f *TestFunctions) EnvSet(env, key, value string) bool {
-	if f.ctx.Env != "" && f.ctx.Env == env {
-		f.ctx.SetEnvAttr(key, env, value)
+	if TestHolder.TestContext.Env != "" && TestHolder.TestContext.Env == env {
+		TestHolder.TestContext.SetEnvAttr(key, env, value)
 	}
 	return true
 }
 
 func (f *TestFunctions) Callback(url string) bool {
-	f.ctx.CallbackUrl = url
+	TestHolder.TestContext.CallbackUrl = url
 	return true
 }
 
 func (f *TestFunctions) CallbackWithFunction(jsFunctionName, url string) bool {
-	f.ctx.CallbackJsFunction = jsFunctionName
-	f.ctx.CallbackUrl = url
+	TestHolder.TestContext.CallbackJsFunction = jsFunctionName
+	TestHolder.TestContext.CallbackUrl = url
 	return true
 }
 
 func (f *TestFunctions) LoadData(file string) (bool, error) {
-	text, err := util.ReadText(f.ctx.testRequest.TestCaseFile.Dir + file)
+	filePath := TestHolder.Function.Code.File.Dir + file
+	if !util.IsExist(filePath) {
+		filePath = file
+	}
+	text, err := util.ReadText(filePath)
 	if err != nil {
 		return false, err
 	}
@@ -84,13 +87,17 @@ func (f *TestFunctions) LoadData(file string) (bool, error) {
 		return false, err
 	}
 	for k, v := range jsonMap {
-		f.ctx.SetAttr(k, AttrValueTypeData, fmt.Sprintf("%v", v))
+		TestHolder.TestContext.SetAttr(k, AttrValueTypeData, fmt.Sprintf("%v", v))
 	}
 	return true, nil
 }
 
 func (f *TestFunctions) Import(name, file string) (bool, error) {
-	script, err := util.ReadText(f.ctx.testRequest.TestCaseFile.Dir + file)
+	filePath := TestHolder.Function.Code.File.Dir + file
+	if !util.IsExist(filePath) {
+		filePath = file
+	}
+	script, err := util.ReadText(filePath)
 	if err != nil {
 		return false, err
 	}
@@ -100,7 +107,7 @@ func (f *TestFunctions) Import(name, file string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	f.ctx.JSVms[name] = jsVm
+	TestHolder.TestContext.JSVms[name] = jsVm
 	return true, nil
 }
 
@@ -116,7 +123,7 @@ func (f *TestFunctions) RunJs(argsStr string) (string, error) {
 func (f *TestFunctions) RunJsWithName(functionName string, args ...interface{}) (string, error) {
 	jsLib := functionName[:strings.Index(functionName, ".")]
 	jsFunc := functionName[strings.Index(functionName, ".")+1:]
-	if jsVm, ok := f.ctx.JSVms[jsLib]; ok {
+	if jsVm, ok := TestHolder.TestContext.JSVms[jsLib]; ok {
 		enc, err := jsVm.Call(jsFunc, nil, args...)
 		if err != nil {
 			return "", err
@@ -127,46 +134,49 @@ func (f *TestFunctions) RunJsWithName(functionName string, args ...interface{}) 
 }
 
 func (f *TestFunctions) Header(key, value string) bool {
-	f.ctx.CommonHeader[key] = value
+	TestHolder.TestContext.CommonHeader[key] = value
 	return true
 }
 
 func (f *TestFunctions) Body(body string) bool {
-	f.cas.Request.Body = body
+	TestHolder.TestCase.Request.Body = body
 	return true
 }
 
 func (f *TestFunctions) Param(key, value string) bool {
-	f.cas.Request.Params[key] = value
+	TestHolder.TestCase.Request.Params[key] = value
 	return true
 }
 
 func (f *TestFunctions) File(name, path string) (bool, error) {
-	dir, _ := filepath.Split(f.ctx.testRequest.TestCaseFile.Name)
-	file, err := os.Open(dir + path)
+	filePath := TestHolder.Function.Code.File.Dir + path
+	if !util.IsExist(filePath) {
+		filePath = path
+	}
+	file, err := os.Open(filePath)
 	if err != nil {
-		return false, nil
+		return false, err
 	}
-	if f.cas.Request.UploadFiles == nil {
-		f.cas.Request.UploadFiles = make(map[string]*os.File)
+	if TestHolder.TestCase.Request.UploadFiles == nil {
+		TestHolder.TestCase.Request.UploadFiles = make(map[string]*os.File)
 	}
-	f.cas.Request.UploadFiles[name] = file
+	TestHolder.TestCase.Request.UploadFiles[name] = file
 	return true, nil
 }
 
 func (f *TestFunctions) AllowRedirect() bool {
-	f.cas.Request.AllowRedirect = true
+	TestHolder.TestCase.Request.AllowRedirect = true
 	return true
 }
 
 func (f *TestFunctions) While(v1 string, op string, v2 string) bool {
-	f.cas.While, _ = f.Assert(v1, op, v2)
-	return f.cas.While
+	TestHolder.TestCase.While, _ = f.Assert(v1, op, v2)
+	return TestHolder.TestCase.While
 }
 
 func (f *TestFunctions) If(v1 string, op string, v2 string) bool {
-	f.cas.If, _ = f.Assert(v1, op, v2)
-	return f.cas.If
+	TestHolder.TestCase.If, _ = f.Assert(v1, op, v2)
+	return TestHolder.TestCase.If
 }
 
 func (f *TestFunctions) Foreach(v1 string, op string, v2 string) bool {
