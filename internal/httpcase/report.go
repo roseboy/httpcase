@@ -92,7 +92,7 @@ func PrintHtmlReport(testCtx *TestContext, result *TestResult) error {
 	//html = testCtx.RenderValueString(html)
 
 	htmlPath := testCtx.Out
-	if !strings.HasSuffix(strings.ToLower(html), ".html") && !strings.HasSuffix(strings.ToLower(html), ".htm") {
+	if !strings.HasSuffix(strings.ToLower(htmlPath), ".html") && !strings.HasSuffix(strings.ToLower(htmlPath), ".htm") {
 		htmlPath = fmt.Sprintf("%s.html", testCtx.Out)
 	}
 

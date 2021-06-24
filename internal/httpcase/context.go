@@ -202,7 +202,7 @@ func (t *TestContext) RunCase(cas *TestCase) *TestCase {
 	var err error
 	cas.Response = rp.Response
 	cas.Time = cas.Time + rp.Response.Time
-	cas.Res, err = t.parseRes(rp.Response)
+	cas.Res, err = t.parseRes(rp)
 	if cas.Err == nil {
 		cas.Err = err
 	}
@@ -275,12 +275,15 @@ func (t *TestContext) RenderValueString(str string) string {
 	return str
 }
 
-func (t *TestContext) parseRes(response *requests.Response) (map[string]interface{}, error) {
+func (t *TestContext) parseRes(rp *requests.ResponseParser) (map[string]interface{}, error) {
+	var (
+		respBody, err = rp.ReadToText()
+	)
 	res := make(map[string]interface{})
-	res["time"] = response.Time
-	res["status"] = response.Status
-	res["protocol"] = response.Proto
-	res["length"] = len(response.Body)
+	res["time"] = rp.Response.Time
+	res["status"] = rp.Response.Status
+	res["protocol"] = rp.Response.Proto
+	res["length"] = len(respBody)
 
 	cookie := make(map[string]string)
 	for _, c := range t.Session.HttpSession.Cookies {
@@ -289,17 +292,17 @@ func (t *TestContext) parseRes(response *requests.Response) (map[string]interfac
 	res["cookie"] = cookie
 
 	header := make(map[string]string)
-	for k, v := range response.Headers {
+	for k, v := range rp.Response.Headers {
 		header[k] = v
 	}
 	res["header"] = header
-	res["text"] = response.Body
+	res["text"] = respBody
 
 	body := make(map[string]interface{})
-	err := json.Unmarshal([]byte(response.Body), &body)
+	err = json.Unmarshal([]byte(respBody), &body)
 	res["body"] = body
 	if err != nil {
-		res["body"] = response.Body
+		res["body"] = respBody
 	}
 
 	return res, nil

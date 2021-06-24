@@ -30,12 +30,12 @@ type Request struct {
 type Response struct {
 	HttpResponse   *http.Response      `json:"-"`
 	ResponseWriter http.ResponseWriter `json:"-"`
-	Body           string
 	Headers        map[string]string
 	Status         int
 	Time           int64
 	Proto          string
 	ContentLength  int64
+	Body           *io.ReadCloser
 }
 
 func NewRequest() *RequestBuilder {
@@ -181,15 +181,9 @@ func SendRequest(req *Request, session *HttpSession) (*Response, error) {
 		header[k] = v
 	}
 
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		response.Time = util.NowMillisecond() - begin
-		return response, err
-	}
 	response.HttpResponse = resp
 	response.Headers = header
-	response.Body = string(body)
+	response.Body = &resp.Body
 	response.Status = resp.StatusCode
 	response.Proto = resp.Proto
 	response.ContentLength = resp.ContentLength
@@ -238,7 +232,7 @@ func PostFile(url string, params map[string]string, nameField string, fileName s
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
