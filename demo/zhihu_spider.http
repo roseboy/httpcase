@@ -1,8 +1,0 @@
-
-@zhihu_vip_list
-GET https://api.zhihu.com/market/categories/all
-
-limit=10&dataType=new&study_type=album&sort_type=hottest&offset=0&level=2&right_type=
-
-### assert ${res.status} == 200
-### print ${res.text}

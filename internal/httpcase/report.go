@@ -15,6 +15,9 @@ import (
 )
 
 func PrintReport(testCtx *TestContext, result *TestResult) error {
+	if result.Skipped > 0 {
+		return nil
+	}
 	err := PrintTextReport(result)
 	if err != nil {
 		return err

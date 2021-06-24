@@ -21,8 +21,9 @@ type TestContext struct {
 	CallbackJsFunction string
 	CommonHeader       map[string]string
 
-	Env string
-	Out string
+	Env  string
+	Out  string
+	Tags string
 
 	testRequest    *TestRequest
 	responseValues []map[string]interface{}
@@ -96,6 +97,10 @@ func (t *TestContext) Run() (*TestResult, error) {
 
 	//执行case
 	for _, cas := range cases {
+		if cas.Skip {
+			continue
+		}
+
 		TestHolder.TestCase = cas
 
 		util.Println()
@@ -148,7 +153,9 @@ func (t *TestContext) Run() (*TestResult, error) {
 			continue
 		}
 		total++
-		if cas.Pass {
+		if cas.Skip {
+			skip++
+		} else if cas.Pass {
 			pass++
 		} else {
 			fail++

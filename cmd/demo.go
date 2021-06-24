@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"github.com/roseboy/httpcase/util"
 	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
@@ -27,10 +28,13 @@ func newDemoCmd() *demoCmd {
 	cmd := &cobra.Command{
 		Use:   "demo",
 		Short: "Run an api demo server",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			log.Println("httpcase demo api server start on:", root.opts.port)
 			srv := &http.Server{Addr: ":" + root.opts.port}
-			return srv.ListenAndServe()
+			err := srv.ListenAndServe()
+			if err != nil {
+				util.Println(util.Red("Error:"), err.Error())
+			}
 		},
 	}
 	cmd.Flags().StringVarP(&root.opts.port, "port", "p", "8080", "server port")

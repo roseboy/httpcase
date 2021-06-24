@@ -40,6 +40,7 @@ type TestCase struct {
 	Codes     []*CodeLine            `json:"-"` //用例原始代码
 	While     bool                   `json:"-"` //循环条件
 	If        bool                   `json:"-"` //是否执行条件
+	Skip      bool                   //是否跳过
 	Pass      bool                   //是否通过
 	Time      int64                  //耗时ms
 	Err       error                  //执行错误
@@ -112,6 +113,7 @@ func (c *Compiler) Compile() (*TestRequest, error) {
 					Pass:      true,
 					If:        true,
 					IsGlobal:  true,
+					Skip:      false,
 				}
 				testCases = append(testCases, funcCase)
 			}
@@ -122,7 +124,7 @@ func (c *Compiler) Compile() (*TestRequest, error) {
 		}
 
 		if strings.HasPrefix(line.Code, "@") {
-			testCase = &TestCase{Codes: make([]*CodeLine, 0), Pass: true, If: true, IsGlobal: false}
+			testCase = &TestCase{Codes: make([]*CodeLine, 0), Pass: true, If: true, IsGlobal: false, Skip: false}
 			testCases = append(testCases, testCase)
 			testCase.Codes = append(testCase.Codes, line)
 		} else if testCase != nil {
@@ -139,6 +141,7 @@ func (c *Compiler) Compile() (*TestRequest, error) {
 		if testCase.IsGlobal {
 			continue
 		}
+
 		codes := testCase.Codes
 		testCase.Name = codes[0].Code[1:]
 		codes[0].Ok = true
@@ -174,6 +177,24 @@ func (c *Compiler) Compile() (*TestRequest, error) {
 			return nil, err
 		}
 	}
+
+	//匹配要执行的case
+	if c.testContext.Tags != "" {
+		tags := strings.Split(c.testContext.Tags, ",")
+		for _, testCase := range testCases {
+			if testCase.IsGlobal {
+				continue
+			}
+			testCase.Skip = true
+			for _, tag := range tags {
+				if strings.Contains(testCase.Name, tag) {
+					testCase.Skip = false
+					break
+				}
+			}
+		}
+	}
+
 	testRequest.TestCases = testCases
 	return testRequest, nil
 }

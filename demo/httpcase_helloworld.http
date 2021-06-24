@@ -57,6 +57,5 @@ print ${res.text}
 
 @查询用户是否删除成功
 GET ${apiUrl}/user/${userId}
-
 assert ${res.status} == 404
 print ${res.text}

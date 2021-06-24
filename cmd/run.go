@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/roseboy/httpcase/internal/httpcase"
+	"github.com/roseboy/httpcase/util"
 	"github.com/spf13/cobra"
 )
 
@@ -22,8 +24,20 @@ func newRunCmd() *runCmd {
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run api test case file",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return doThat(root, args)
+		Run: func(cmd *cobra.Command, args []string) {
+			err := doThat(root, args)
+			if err != nil {
+				util.Println(util.Red("Error:"), err.Error())
+			}
+		},
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 {
+				return errors.New("requires a path argument")
+			}
+			if !util.IsExist(args[0]) {
+				return fmt.Errorf("invalid file path \"%s\"", args[0])
+			}
+			return nil
 		},
 	}
 
@@ -35,13 +49,19 @@ func newRunCmd() *runCmd {
 }
 
 func doThat(cmd *runCmd, args []string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("can't get test case file")
+	var (
+		path = args[0]
+		tags string
+	)
+
+	if len(args) > 1 {
+		tags = args[1]
 	}
-	path := args[0]
+
 	testCtx := httpcase.NewTestContext()
 	testCtx.Env = cmd.opts.env
 	testCtx.Out = cmd.opts.out
+	testCtx.Tags = tags
 
 	//读取文件
 	codes, err := httpcase.ReadCaseFile(path)
