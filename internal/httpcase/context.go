@@ -2,6 +2,7 @@ package httpcase
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"regexp"
 	"strings"
@@ -87,7 +88,7 @@ func (t *TestContext) GetAttrStr(name string) string {
 	if v, ok := t.Attr[name]; ok {
 		return v.Value.(string)
 	}
-	return ""
+	return os.Getenv(name)
 }
 
 func (t *TestContext) Run() (*TestResult, error) {
