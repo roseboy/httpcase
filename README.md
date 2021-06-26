@@ -17,13 +17,19 @@ httpcases是一款golang开发的、通过编写接口测试脚本执行接口�
 
 [点此下载](https://github.com/roseboy/httpcase/releases)
 
-#### 2.brew 安装
+#### 2. brew 安装
 
 ```sh
 brew install roseboy/tap/httpcase
 ```
 
-#### 3. 源码安装
+#### 3. pip 安装
+
+```sh
+pip install httpcase
+```
+
+#### 4. 源码安装
 ```sh
 //1. 下载源码
 git clone https://gitee.com/roseboy/httpcase.git
@@ -43,7 +49,8 @@ go env -w GOPROXY=https://goproxy.cn,direct
 #### 简单示例
 
 保存以下代码为文件 apitest.hc 
-```
+```js
+
 //声明一个测试用例,名字叫做 ApiTest
 @ApiTest
 //使用POST方法请求一个url
@@ -52,14 +59,12 @@ POST http://localhost:8080/test
 user-agent: httpcasev1.0
 x-requested-with: XMLHttpRequest
 cookie: username=admin; name=value;
-
 //设置请求体
 {
     "name":"王二丫",
     "sex":"男",
     "age":18
 }
-
 //断言函数
 //判断http状态是否等于200
 assert ${res.status} == 200
@@ -153,10 +158,11 @@ hc demo -p 8000
 打开新的命令行，执行以下命令，运行测试用例
 
 ```sh
-hc run httpcase_helloworld.hc
+hc run httpcase_helloworld.hc -o report.html
 ```
 
-执行完成后，控制台打印如下执行结果，同时生成 httpcase_helloworld_report_xxxxxxxx.html的测试报告。
+执行完成后，控制台打印如下执行结果，同时生成测试报告文件 report.html。
+
 ```sh
 ---------------------------------------------------------------------
   Test Result (Total:6, Pass:6, Fail:0, Skip:0, Duration:1ms)
@@ -234,7 +240,7 @@ hc run httpcase_helloworld.hc
 
 ### 请求响应结构体(${res})
 
-```json
+```js
 {
     "cookie":{ //Cookies
         "JSESSIONID":"d6f775bb0765885473b0cba3a5fa9c12",
@@ -245,7 +251,6 @@ hc run httpcase_helloworld.hc
         "Cache-Control":"no-cache, no-store, must-revalidate, private, max-age=0",
         "Content-Type":"application/json; charset=utf-8",
         "Date":"Sun, 04 Apr 2021 13:24:40 GMT",
-        "Etag":"W/"8937a8d575c57c91d8bcbc5f43850e0cf2f95d06"",
         "Pragma":"no-cache",
         "Referrer-Policy":"no-referrer-when-downgrade",
         "Server":"CLOUD ELB 1.0.0",
