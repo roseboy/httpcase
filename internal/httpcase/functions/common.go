@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	myjson "github.com/roseboy/httpcase/json"
+	"github.com/roseboy/httpcase/util"
 	"reflect"
 	"strconv"
 	"strings"
@@ -40,7 +42,18 @@ func (f *Common) PrintJson(o interface{}) string {
 	if err != nil {
 		return data
 	}
-	return fmt.Sprintf("\n%s", str.String())
+	data = str.String()
+
+	if util.IsWindows() {
+		return data
+	}
+
+	jsonRaw, err := myjson.Highlight([]byte(data))
+	if err != nil {
+		return data
+	}
+
+	return fmt.Sprintf("\n%s", string(jsonRaw))
 }
 
 func (f *Common) Sleep(t string) bool {
