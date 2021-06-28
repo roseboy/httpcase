@@ -185,13 +185,7 @@ func (c *Compiler) Compile() (*TestRequest, error) {
 			if testCase.IsGlobal {
 				continue
 			}
-			testCase.Skip = true
-			for _, tag := range tags {
-				if strings.Contains(testCase.Name, tag) {
-					testCase.Skip = false
-					break
-				}
-			}
+			testCase.Skip = !util.IsWildcardMatch(tags, testCase.Name)
 		}
 	}
 

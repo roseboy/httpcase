@@ -20,14 +20,14 @@ POST ${apiUrl}/user
 assert ${res.status} == 200
 print ${res.body.id}
 set userId ${res.body.id}
-print ${res.text}
+printJson ${res.text}
 
 @查询用户
 GET ${apiUrl}/user/${userId}
 
 assert ${res.status} == 200
 assertEq ${res.body.name} 王二丫
-print ${res.text}
+printJson ${res.text}
 
 @修改用户
 POST ${apiUrl}/user/${userId}
@@ -40,12 +40,12 @@ POST ${apiUrl}/user/${userId}
 }
 
 assert ${res.status} == 200
-print ${res.text}
+printJson ${res.text}
 
 @查询用户是否修改成功
 GET ${apiUrl}/user/${userId}
 
-print ${res.text}
+printJson ${res.text}
 assert ${res.status} == 200
 assertEq ${res.body.age} 20
 
@@ -53,9 +53,9 @@ assertEq ${res.body.age} 20
 DELETE ${apiUrl}/user/${userId}
 
 assert ${res.status} == 200
-print ${res.text}
+printJson ${res.text}
 
 @查询用户是否删除成功
 GET ${apiUrl}/user/${userId}
 assert ${res.status} == 404
-print ${res.text}
+printJson ${res.text}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/roseboy/httpcase/internal/httpcase/functions"
 	"reflect"
+	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -35,5 +37,13 @@ func TestFuncNames(t *testing.T) {
 	for i := 0; i < size; i++ {
 		fmt.Println(typ.Kind(), typ.Method(i).Name)
 	}
+}
 
+func TestMatch(t *testing.T) {
+	ps := []string{"abcd*cd", "abc*", "*cdba", "abcd*cd*", "*abcd*cd", "*abcd*cd*"}
+	for _, p := range ps {
+		p1 := strings.Replace(p, "*", "(.*?)", -1)
+		regx := regexp.MustCompile(p1)
+		fmt.Println(p, p1, regx.MatchString("abcdcd"))
+	}
 }

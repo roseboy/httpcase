@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -182,6 +183,23 @@ func IsExist(path string) bool {
 	}
 	if os.IsNotExist(err) {
 		return false
+	}
+	return false
+}
+
+func IsWildcardMatch(patterns []string, tag string) bool {
+	for _, p := range patterns {
+		if !strings.Contains(p, "*") {
+			if p == tag {
+				return true
+			}
+			continue
+		}
+		regxStr := strings.Replace(p, "*", "(.*?)", -1)
+		regx := regexp.MustCompile(regxStr)
+		if regx.MatchString(tag) {
+			return true
+		}
 	}
 	return false
 }
